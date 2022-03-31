@@ -20,4 +20,13 @@ CHIP Computer {
 
     PARTS:
     // Put your code here:
+    // ROM is non-volatile storage, which means the information is maintained even if the component loses power. 
+    // ROM is located on a BIOS chip which is plugged into the motherboard. 
+    // ROM plays a critical part in booting up or starting up, your computer.
+    ROM32K(address=pc,out=instruction);  
+    // CPU only uses instructions once after that it read and write memory from RAM parts 
+    // to read and write on RAM, you need to know: where (address), what (outcome) and how (load or not) to write
+	CPU(inM=inM,instruction=instruction,reset=reset,outM=outM,writeM=writeM,addressM=addressM,pc=pc);
+    // if load = true, overwrite otherwise emit the old values 
+	Memory(in=outM,load=writeM,address=addressM,out=inM);
 }

@@ -80,8 +80,224 @@ D=M  // access the base address D-register holds LCL
 @0
 D=D+A  // D-register holds LCL+0 but NO LONGER holds the value from the stack !!
 ```
+__Failed Again__:
+```cpp
+// move the top value of the stack into RAM_Local[LCL+0]
+@SP
+AM=M-1  // A-register and RAM[A] = RAM[SP--], now A register points RAM[SP--]
+D=M  // D-register holds the value of the stack
+@R13  // a free register
+M=D  // R13 holds the value from the stack now 
+@lcl
+D=M  // access the base address of LCL
+@0
+D=D+A  // update the address
+A=D  // A-register holds the address of LCL+0
+// at this stage, one could not move R13 to M
+```
 The correct order should be:
+```cpp
+@LCL
+D=M  // D-register holds the base address of LCL
+@0
+D=D+A // D-register holds the address at LCL+0
+
+// Now save the address LCL+0 into R13
+@R13
+M=D
+
+// now move the value from the stack to LCL+0
+@SP
+AM=M-1  // [SP--]
+D=M  // D-register holds the value of Stack[SP--]
+@R13
+A=M  // points to RAM[LCL+0]
+M=D  // RAM[LCL+0] = Stack[SP--]
+```
+
+`push this 6`
+
+```cpp
+// move RAM[This+6] into the stack
+@THIS
+D=M 
+@6
+A=A+D
+D=M  // D-register holds the value of RAM[THIS+6]
+@SP
+AM=M+1
+A=A-1
+M=D 
+```
+`push temp 6`
+
+```cpp
+// move RAM[This+6] into the stack
+@11  // 6+5
+D=M  // D-register holds the value of RAM[THIS+6]
+@SP
+AM=M+1
+A=A-1
+M=D 
+```
+
+`pop temp 6`
+
+```cpp
+@SP
+AM=M-1
+D=M
+@11
+M=D
+```
+
+`add`:
+
+```cpp
+// add RAM[SP--] + RAM[SP-2]
+@SP
+AM=M-1
+D=M  // D-register holds RAM[SP--]
+A=A-1 
+M=D+M  // RAM[SP--] + RAM[SP-2]
+```
+
+`sub`:
+
+```cpp
+// add RAM[SP--] + RAM[SP-2]
+@SP
+AM=M-1
+D=M  // D-register holds RAM[SP--]
+A=A-1 
+M=M-D  // RAM[SP-2] - RAM[SP--]
+```
+
+`neg`:
+
+```cpp
+@SP
+A=M-1  // pointer DOES NOT MOVE
+M=-M
+```
+
+`eq`:
+
+```cpp
+// compute two values first
+@SP
+AM=M-1
+D=M  // D-register holds RAM[SP--] D=M=y , SP = SP-1
+A=A-1 
+M=M-D  // RAM[SP-2] - RAM[SP--] x= x- y RAM[SP-2] = 
+// compare it with 0
+@SP
+A=M-1  // A points to x  but SP does not change 
+D=M  // D = x D=RAM[SP-2] == 0 or not 
+@EQUAL  // if == 0 jump to equal
+D;JEQ
+// if != 0 then do
+@SP
+A=M-1
+M=0
+// jump to the end, THIS IS CRUCIAL!
+@END
+0;JMP
+(EQUAL)
+@SP
+A=M-1  // points to x 
+M=1
+(END)
+```
+
+`gt`:
+
+```cpp
+// compute two values first
+@SP
+AM=M-1
+D=M  // D-register holds RAM[SP--] D=M=y 
+A=A-1 
+M=M-D  // RAM[SP-2] - RAM[SP--] x= x- y 
+// compare it with 0
+@SP
+A=M-1  // A points to x  but SP does not change 
+D=M  // D = x 
+@GREATER
+D;JGT
+@SP
+A=M-1
+M=0
+(GREATER)
+@SP
+A=M-1  // points to x 
+M=1
+```
+
+`lt`:
+
+```cpp
+// compute two values first
+@SP
+AM=M-1
+D=M  // D-register holds RAM[SP--] D=M=y 
+A=A-1 
+M=M-D  // RAM[SP-2] - RAM[SP--] x= x- y 
+// compare it with 0
+@SP
+A=M-1  // A points to x  but SP does not change 
+D=M  // D = x 
+@LESS
+D;JLT
+@SP
+A=M-1
+M=0
+(LESS)
+@SP
+A=M-1  // points to x 
+M=1
+```
+
+`and`:
+
+```cpp
+// add RAM[SP--] + RAM[SP-2]
+@SP
+AM=M-1
+D=M  // D-register holds RAM[SP--]
+A=A-1 
+M=D&M  // RAM[SP--] + RAM[SP-2]
+```
+
+`or`:
+
+```cpp
+// add RAM[SP--] + RAM[SP-2]
+@SP
+AM=M-1
+D=M  // D-register holds RAM[SP--]
+A=A-1 
+M=D|M  // RAM[SP--] + RAM[SP-2]
+```
+
+`not`:
+
+```cpp
+@SP
+A=M-1
+M=!M
+```
 
 
 
 
+### Summary
+
+* pop segment i: 
+    - move value from stack to segment
+    - saving the address of segment first
+    - points the value of stack into `RAM[segment+i]`
+* push segment i:
+    - move value from segment to stack
+    - access the value directly 
+    - points to `RAM[SP]`

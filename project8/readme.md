@@ -19,6 +19,8 @@ Nand2Tetris
 
 ### Prompt Command call
 
+At projects/08/ directory: 
+
 ```bash
 # prompt> call simple function -b: booting (default = 'no') -s: simple function (default = 'no')
 # user@macbook 08$
@@ -31,4 +33,9 @@ python VMTranslator.py ./FunctionCalls/NestedCall/ -b no -s no
 # prompt> call function with booting 
 # user@macbook 08$
 python VMTranslator.py ./FunctionCalls/FibonacciElement/ -b yes -s no  
+
+# prompt> call function with booting 
+# user@macbook 08$
+python VMTranslator.py ./FunctionCalls/FibonacciElement/ -b yes -s no
+python VMTranslator.py ./FunctionCalls/StaticsTest/ -b yes -s no    
 ```

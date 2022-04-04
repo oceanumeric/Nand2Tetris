@@ -65,7 +65,7 @@ D=A
 AM=M+1
 A=A-1
 M=D
-// FUNCTION: call Class1.set 2
+// CALL: call Class1.set 2
 @Class1.set$ret.0
 D=A
 @SP
@@ -131,7 +131,7 @@ D=A
 AM=M+1
 A=A-1
 M=D
-// FUNCTION: call Class2.set 2
+// CALL: call Class2.set 2
 @Class2.set$ret.1
 D=A
 @SP
@@ -183,7 +183,7 @@ AM=M-1
 D=M
 @5
 M=D
-// FUNCTION: call Class1.get 0
+// CALL: call Class1.get 0
 @Class1.get$ret.2
 D=A
 @SP
@@ -229,7 +229,7 @@ M=D
 @Class1.get
 0;JMP
 (Class1.get$ret.2)
-// FUNCTION: call Class2.get 0
+// CALL: call Class2.get 0
 @Class2.get$ret.3
 D=A
 @SP
@@ -321,6 +321,7 @@ D=A
 AM=M+1
 A=A-1
 M=D
+// RETURN: return
 @LCL
 D=M
 @frame
@@ -394,6 +395,7 @@ AM=M-1
 D=M
 A=A-1
 M=M-D
+// RETURN: return
 @LCL
 D=M
 @frame
@@ -486,6 +488,7 @@ D=A
 AM=M+1
 A=A-1
 M=D
+// RETURN: return
 @LCL
 D=M
 @frame
@@ -559,6 +562,7 @@ AM=M-1
 D=M
 A=A-1
 M=M-D
+// RETURN: return
 @LCL
 D=M
 @frame

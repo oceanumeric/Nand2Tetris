@@ -483,7 +483,8 @@ class VMTranslator:
         self.function_stack.append(function_name)
         dot_idx = function_name.find('.')
         file_name = function_name[:dot_idx]
-        self.file_name_label.append(file_name)
+        if self.simple != 'yes':
+            self.file_name_label.append(file_name)
         self.assembly.append('// FUNCTION: ' + line)
         self.assembly.append(f'({function_name})')
         for i in range(num_local_var):
@@ -500,7 +501,7 @@ class VMTranslator:
         arg_idx = line.rfind(' ')
         function_name = line[name_idx+1:arg_idx]
         num_args = line[arg_idx+1:]
-        self.assembly.append('// FUNCTION: ' + line)
+        self.assembly.append('// CALL: ' + line)
         self.assembly.append('@'+function_name+'$ret.'+str(VMTranslator.retidx))
         self.assembly.append('D=A')
         self.assembly.append('@SP')
@@ -549,6 +550,7 @@ class VMTranslator:
         VMTranslator.retidx += 1
     
     def __map_return(self, line):
+        self.assembly.append('// RETURN: ' + line)
         self.assembly.append('@LCL')
         self.assembly.append('D=M')
         self.assembly.append('@frame')

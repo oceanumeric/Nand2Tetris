@@ -136,7 +136,7 @@ Here is the implementation protocols:
 Each function has four parts: arguments - function_name - local variables - return.
 And we have to save all those essential addresses for the caller and callee. 
 
-`call f_name num_args`:
+### `call f_name num_args`:
 
 ```assembly
 push return_address_i  // (i = sequential counter)
@@ -156,21 +156,6 @@ goto function
 repreat num_variables times:
     push 0  // initializing local variables = 0 
 ```
-
-`return`
-
-```assembly
-frame = LCL  // frame is a temporary variable
-ret_temp = *(frame-5)  // puts the return address in a temporary variable
-*ARG = pop()  // repositions the return value for the caller 
-SP = ARG + 1  // repositions SP for the caller
-THAT = *(frame-1)
-THIS = *(frame-2)
-ARG = *(frame-3)
-LCL = *(frame-4)
-goto ret_temp  // go to the return address 
-```
-
 
 ### Return
 

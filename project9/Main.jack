@@ -1,0 +1,29 @@
+// simple test: guessing numbers
+
+class Main {
+    function void main() {
+        var int mystery_number;
+        var int input_number;
+
+        let mystery_number = 719;
+        let input_number = 0; 
+
+        do Output.printString("Please guess a number I have in my mind: ");
+        let input_number = Keyboard.readInt("What is my number?");
+
+        while (~(input_number = mystery_number)) {
+            if (input_number < mystery_number) {
+                do Output.printString("The number you guess is smaller than mine");
+                do Output.printString("Please try it again");
+                let input_number = Keyboard.readInt("What is my number?");
+            } else {
+                do Output.printString("The number you guess is bigger than mine");
+                do Output.printString("Please try it again");
+                let input_number = Keyboard.readInt("What is my number?");
+            }
+        }
+
+        do Output.printString("Congratulations! You got it, my number is 719");
+        return;
+    }
+}

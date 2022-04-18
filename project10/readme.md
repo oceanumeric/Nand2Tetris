@@ -42,3 +42,7 @@ def advance(self):
         # space
         self._pop()
 ```
+
+### It is all about iterator
+
+The iterator of `has_more_tokens()` has to run at the same speed with `advance()`

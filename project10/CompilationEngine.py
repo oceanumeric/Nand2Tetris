@@ -153,7 +153,7 @@ class CompilationEngine:
         self._write_symbol()  # = 
         
         self.compile_expression()  # 
-        self._write_symbol()  # ':'
+        self._write_symbol()  # ';'
         self._end_with('letStatement')   
         
     def compile_if(self):
@@ -260,10 +260,11 @@ class CompilationEngine:
                 self.compile_expression_list()  # can be empty
                 self._write_symbol()
             elif self._match_symbols('.'):  # method call foo.sqrt()
+                self._write_symbol()
                 self._write_identifier()
-                self._write_symbol()
+                self._write_symbol()  # '('
                 self.compile_expression_list()  # can be empty 
-                self._write_symbol()
+                self._write_symbol()  # ')'
         elif self._match_symbols('('):
             self._write_symbol()
             self.compile_expression()
@@ -310,29 +311,29 @@ class CompilationEngine:
         
     def _write_keyword(self):
         '''Tokinze keyword and write'''
-        self._write_line("<keyword>" + self.tokenizer.key_word()+
-                         "</keyword>")
+        self._write_line("<keyword> " + self.tokenizer.key_word()+
+                         " </keyword>")
         self.tokenizer.advance()
         
     def _write_symbol(self):
         '''Tokenize symbol and write and advance()'''
-        self._write_line("<symbol>" + self.tokenizer.symbol()+
-                         "</symbol>")
+        self._write_line("<symbol> " + self.tokenizer.symbol()+
+                         " </symbol>")
         self.tokenizer.advance()
         
     def _write_identifier(self):
-        self._write_line("<identifier>" + self.tokenizer.identifier() +
-                         "</identifier>")
+        self._write_line("<identifier> " + self.tokenizer.identifier() +
+                         " </identifier>")
         self.tokenizer.advance()
         
     def _write_integer(self):
-        self._write_line("<integerConstant>" + str(self.tokenizer.int_val()) +
-                         "</integerConstant>")
+        self._write_line("<integerConstant> " + str(self.tokenizer.int_val()) +
+                         " </integerConstant>")
         self.tokenizer.advance()
         
     def _write_strings(self):
-        self._write_line("<stringConstant>" + self.tokenizer.string_val() +
-                         "</stringConstant>")
+        self._write_line("<stringConstant> " + self.tokenizer.string_val() +
+                         " </stringConstant>")
         self.tokenizer.advance()
         
     def _write_type(self):

@@ -25,6 +25,8 @@ class CompilationEngine:
     
     def __init__(self, file_path):
         self.tokenizer = JackTokenizer(file_path) 
+        if self.tokenizer.has_more_tokens():  # initialize the first move
+            self.tokenizer.advance()
         self.indent_level = 0 
         jack_idx = file_path.find('.jack')
         xml_file = file_path[:jack_idx] + '.xml'
@@ -79,9 +81,9 @@ class CompilationEngine:
         self._start_with('subroutineBody')
         self._write_symbol()  # '{'
         
-        while self.tokenizer.key_word() == 'var':
-            self.compile_var_dec()
-        
+        if self.tokenizer.key_word() == 'var':
+            self.compile_var_dec()  # it has a while loop 
+            
         if not self._match_symbols('}'):
             self.compile_statements()
             
@@ -314,23 +316,23 @@ class CompilationEngine:
         
     def _write_symbol(self):
         '''Tokenize symbol and write and advance()'''
-        self._write_line("<keyword>" + self.tokenizer.symbol()+
-                         "</keyword>")
+        self._write_line("<symbol>" + self.tokenizer.symbol()+
+                         "</symbol>")
         self.tokenizer.advance()
         
     def _write_identifier(self):
-        self._write_line("<keyword>" + self.tokenizer.identifier() +
-                         "</keyword>")
+        self._write_line("<identifier>" + self.tokenizer.identifier() +
+                         "</identifier>")
         self.tokenizer.advance()
         
     def _write_integer(self):
-        self._write_line("<keyword>" + self.tokenizer.in_val() +
-                         "</keyword>")
+        self._write_line("<integerConstant>" + str(self.tokenizer.int_val()) +
+                         "</integerConstant>")
         self.tokenizer.advance()
         
     def _write_strings(self):
-        self._write_line("<keyword>" + self.tokenizer.string_val() +
-                         "</keyword>")
+        self._write_line("<stringConstant>" + self.tokenizer.string_val() +
+                         "</stringConstant>")
         self.tokenizer.advance()
         
     def _write_type(self):
@@ -343,7 +345,7 @@ class CompilationEngine:
         return self.tokenizer.token_type() == 'symbol'
     
     def _is_key_word(self):
-        return self.tokenizer.token_type == 'keyword'
+        return self.tokenizer.token_type() == 'keyword'
     
     def _is_operator(self):
         return (self._is_symbol() and self.tokenizer.symbol() in 
@@ -367,3 +369,25 @@ class CompilationEngine:
     def _match_keyword(self, keyword):
         return (self._is_key_word() and self.tokenizer.key_word() == keyword)
         
+        
+def main():
+    if len(sys.argv) < 2:
+        print("ERROR: Missing argument [file_path]")
+        return -1
+    
+    file_path = sys.argv[1]
+       
+    if '.jack' in file_path:
+        # if a single jack file
+        ce = CompilationEngine(file_path)
+    else:
+        # a folder 
+        for file_name in os.listdir(file_path):
+            if '.jack' in file_name:
+                # call JackTokenizer 
+                file = file_path+file_name
+                ce = CompilationEngine(file)
+                
+                
+if __name__ == "__main__":
+    main()

@@ -45,77 +45,49 @@ class JackTokenizer:
     _symbols = frozenset(SYMBOLS)
     _white_space = frozenset(WHITE_SPACE)
     
-    def __init__(self, file_name, write_xml=False):
+    def __init__(self, file_name):
         # input file stream and token 
         self.file = open(file_name, 'r')
         self.current_token = ""  # current token = None 
-        self.write = False
-        if write_xml:
-            self.write = True
-            jack_idx = file_name.find('.jack')
-            xml_file = file_name[:jack_idx] + 'T.xml'
-            self.xml = open(xml_file, 'w')
-            self.xml.write('<tokens>\n')
-        self.advance()  # initialize the advace()
-        
+  
     def __del__(self):
         # destructor 
         self.file.close()
-        if self.write:
-            self.xml.write('</tokens>\n')
-            self.xml.close()
         
     def has_more_tokens(self):
-        # it should be called 'has_more_chars'
+        # ignore comments and white space 
         while self._peek() != "":
-            return True
+            # Skipping spaces and newlines:
+            while self._peek() in self._white_space:
+                self._pop()
+                if self._peek() == "":
+                    return False
+            if self._peek() == '"':
+                # it is token 
+                return True
+            else:
+                # skip comments 
+                cs = self._peek(2)
+                while cs in ['//', '/*']:
+                    self._skip_comments()
+                    cs = self._peek(2)
+            if self._peek() not in self._white_space:
+                # must have some token 
+                return True
+            
         return False
-        
+            
     def advance(self):
-        # get the next token from the input and make it the current token
-        # advance in the level of TOKEN not CHAR !!!  
-        if self._peek() == '"':
-            # string constant 
-            self.current_token = self._pop_strings()
-            if self.write:
-                xml_head = '\t<'+self.token_type()+'>'
-                xml_tail = '</'+self.token_type()+'>\n'
-                self.xml.write(xml_head + ' ' + self.string_val() + ' ' + xml_tail)
-        elif self._peek(2) in ['//', '/*']:
-            # skip the comments
-            self._skip_comments()
-        elif self._peek() == '\n':
-            # skip the empty line
-            self._pop()
-        elif self._peek() in self._symbols:
-            # symbols 
-            self.current_token = self._pop()
-            if self.write:
-                xml_head = '\t<'+self.token_type()+'>'
-                xml_tail = '</'+self.token_type()+'>\n'
-                xml_token = self.current_token
-                if xml_token == '<':
-                    xml_token = '&lt;'
-                if xml_token == '>':
-                    xml_token = '&gt;'
-                if xml_token == '&':
-                    xml_token = '&amp;'
-                self.xml.write(xml_head + ' ' + xml_token  + ' ' + xml_tail)
-        elif len(self._peek_word()) > 0:
-            # identifiers, integers and keywords 
-            self.current_token = self._peek_word()
-            self._pop(len(self.current_token))
-            if self.write:
-                token_type = self.token_type()
-                xml_head = '\t<'+token_type+'>'
-                xml_tail = '</'+token_type+'>\n'
-                self.xml.write(xml_head + ' ' + self.current_token + ' ' + xml_tail)
-        else:
-            # space
-            self._pop()
-        
+        if self.has_more_tokens():
+            if self._peek() != '"':
+                self.current_token = self._peek_word()
+                self._pop(len(self.current_token))
+            else:
+                self.current_token = self._pop_strings()
         
     def token_type(self):
+        # need to be updated later: iterator is not on the same level with
+        # has_more_tokens() and advance()
         token = self.current_token
         if token.upper() in self._keywords:
             return "keyword"
@@ -145,7 +117,7 @@ class JackTokenizer:
     def string_val(self):
         return self.current_token.replace('"', '')
     
-    # -- private method -- 
+    # -- private method --    
     def _peek(self, num_char=1):
         current_pos = self.file.tell()  # current position
         char = self.file.read(num_char)  # read num_char 
@@ -196,6 +168,24 @@ class JackTokenizer:
                 self._pop()
             self._pop(2)  # pop */ 
             
+
+def _write_token(token, token_type):
+    
+    if token == '<':
+        token = '&lt;'
+    if token == '>':
+        token = '&gt;'
+    if token == '&':
+        token = '&amp;'
+    xml_head = '\t<'+token_type+'>'
+    xml_tail = '</'+token_type+'>\n'
+    output = xml_head + ' ' +  token + ' ' + xml_tail
+    if token_type == "stringConstant":
+        output = xml_head + ' ' +  token.replace('"', '') + ' ' + xml_tail
+        
+    return output
+
+            
 def main():
     if len(sys.argv) < 2:
         print("ERROR: Missing argument [file_path]")
@@ -203,47 +193,43 @@ def main():
     
     file_path = sys.argv[1]
     
-    xml_output = sys.argv[2]
-    
-    if xml_output == 'false':
-        xml_output = False
-    elif xml_output == 'true':
-        xml_output = True
-    else:
-        xml_output = False
        
     if '.jack' in file_path:
         # if a single jack file
-        jt = JackTokenizer(file_path, write_xml=xml_output)
+        jack_idx = file_path.find('.jack')
+        xml_file = file_path[:jack_idx] + 'T.xml'
+        output_file = open(xml_file, 'w')
+        output_file.write('<tokens>\n')
+        jt = JackTokenizer(file_path)
         while jt.has_more_tokens():
             jt.advance()
+            token = jt.current_token
+            token_type = jt.token_type()
+            output_file.write(_write_token(token, token_type))
+        
+        output_file.write('</tokens>\n')
+        output_file.close()
+    
     else:
         # a folder 
         for file_name in os.listdir(file_path):
             if '.jack' in file_name:
                 # call JackTokenizer 
                 file = file_path+file_name
-                jt = JackTokenizer(file, write_xml=xml_output)
+                jack_idx = file.find('.jack')
+                xml_file = file[:jack_idx] + 'T.xml'
+                output_file = open(xml_file, 'w')
+                output_file.write('<tokens>\n')
+                jt = JackTokenizer(file)
                 while jt.has_more_tokens():
                     jt.advance()
+                    token = jt.current_token
+                    token_type = jt.token_type()
+                    output_file.write(_write_token(token, token_type))
+                output_file.write('</tokens>\n')
+                output_file.close()
+                    
                         
                             
 if __name__ == "__main__":
     main()
-        
-        
-        
-        
-    
-    
-    
-    
-    
-    
-    
-                    
-        
- 
-        
-        
-        

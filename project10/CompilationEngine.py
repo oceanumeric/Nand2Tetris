@@ -317,7 +317,17 @@ class CompilationEngine:
         
     def _write_symbol(self):
         '''Tokenize symbol and write and advance()'''
-        self._write_line("<symbol> " + self.tokenizer.symbol()+
+        if self.tokenizer.symbol() == '<':
+            self._write_line("<symbol> " + '&lt;' +
+                         " </symbol>")
+        elif self.tokenizer.symbol() == '>':
+            self._write_line("<symbol> " + '&gt;' +
+                         " </symbol>")
+        elif self.tokenizer.symbol() == '&':
+            self._write_line("<symbol> " + '&amp;' +
+                         " </symbol>")
+        else:
+            self._write_line("<symbol> " + self.tokenizer.symbol()+
                          " </symbol>")
         self.tokenizer.advance()
         

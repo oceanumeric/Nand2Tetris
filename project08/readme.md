@@ -1,5 +1,7 @@
 ## Project 8: Virtual Machine II 
 
+VM Translator: VM code (stack arithmetic) to assembly code
+
 ### Directory Structure
 
 ```

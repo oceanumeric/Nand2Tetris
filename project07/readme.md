@@ -1,5 +1,7 @@
 ## Project 7 : Virtual Machine I - Stack Arithmetic
 
+The magic of stack 
+
 ### Hack's Assembly Language Examples
 
 ```cpp
